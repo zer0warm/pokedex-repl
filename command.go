@@ -11,7 +11,7 @@ import (
 type cliCommand struct {
 	name     string
 	desc     string
-	callback func() error
+	callback func(cfg *api.Config) error
 }
 
 func listCommands() map[string]cliCommand {
@@ -34,24 +34,23 @@ func listCommands() map[string]cliCommand {
 	}
 }
 
-func commandExit() error {
+func commandExit(cfg *api.Config) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
-func commandHelp() error {
+func commandHelp(cfg *api.Config) error {
 	fmt.Println("Welcome to the Pokedex!")
 	fmt.Println("Usage:")
 	fmt.Println()
 	for _, cmd := range listCommands() {
-		fmt.Printf("%s: %s\n", cmd.name, cmd.desc)
+		fmt.Printf("%-20s%s\n", cmd.name, cmd.desc)
 	}
 	return nil
 }
 
-func commandMap() error {
-	cfg := &api.Config{}
+func commandMap(cfg *api.Config) error {
 	areas, err := cfg.GetLocationAreas()
 	if err != nil {
 		return fmt.Errorf("while getting location-areas: %w", err)

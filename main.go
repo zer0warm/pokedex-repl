@@ -6,10 +6,13 @@ import (
 	"log"
 	"os"
 	"strings"
+
+	api "github.com/zer0warm/pokedex-repl/internal/pokeapi"
 )
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
+	apiConfig := api.Config{}
 	for {
 		fmt.Print("Pokedex> ")
 
@@ -22,7 +25,7 @@ func main() {
 			inputWords := cleanInput(scanner.Text())
 			command := inputWords[0]
 			if cmd, ok := listCommands()[command]; ok {
-				if err := cmd.callback(); err != nil {
+				if err := cmd.callback(&apiConfig); err != nil {
 					fmt.Errorf("while running callback: %w\n", err)
 				}
 			}
