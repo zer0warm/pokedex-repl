@@ -25,3 +25,8 @@ func main() {
 		log.Fatal(err)
 	}
 }
+
+// Split user input into words (whitespace-separated)
+func cleanInput(text string) []string {
+	return strings.Fields(strings.Trim(strings.ToLower(text), " \t"))
+}
