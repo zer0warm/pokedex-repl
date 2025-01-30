@@ -17,9 +17,11 @@ func main() {
 			break
 		}
 
-		inputLine := strings.Trim(strings.ToLower(scanner.Text()), " \t")
-		command := strings.Fields(inputLine)[0]
-		fmt.Println("Your command was:", command)
+		// Do nothing when issuing line breaks
+		if len(scanner.Text()) > 0 {
+			inputWords := cleanInput(scanner.Text())
+			fmt.Println("Your command was:", inputWords[0])
+		}
 	}
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
