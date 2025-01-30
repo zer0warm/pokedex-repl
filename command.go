@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -31,6 +32,11 @@ func listCommands() map[string]cliCommand {
 			desc:     "List 20 location areas",
 			callback: commandMap,
 		},
+		"mapb": {
+			name:     "mapb",
+			desc:     "List previous 20 location areas",
+			callback: commandMapb,
+		},
 	}
 }
 
@@ -51,8 +57,29 @@ func commandHelp(cfg *api.Config) error {
 }
 
 func commandMap(cfg *api.Config) error {
-	areas, err := cfg.GetLocationAreas()
+	areas, err := cfg.GetLocationAreas(true)
 	if err != nil {
+		if errors.Is(err, api.ErrNoNext) {
+			fmt.Println("You are on the last page!")
+			return nil
+		}
+		return fmt.Errorf("while getting location-areas: %w", err)
+	}
+
+	for _, area := range areas {
+		fmt.Println(area.Name)
+	}
+
+	return nil
+}
+
+func commandMapb(cfg *api.Config) error {
+	areas, err := cfg.GetLocationAreas(false)
+	if err != nil {
+		if errors.Is(err, api.ErrNoPrev) {
+			fmt.Println("You are on the first page!")
+			return nil
+		}
 		return fmt.Errorf("while getting location-areas: %w", err)
 	}
 

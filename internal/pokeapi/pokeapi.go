@@ -2,6 +2,7 @@ package pokeapi
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 )
@@ -15,10 +16,29 @@ type Config struct {
 	Previous string
 }
 
-func (cfg *Config) GetLocationAreas() ([]Area, error) {
+var (
+	ErrNoNext = errors.New("no next entries")
+	ErrNoPrev = errors.New("no prev entries")
+)
+
+// Get location areas with direction (forward or not)
+func (cfg *Config) GetLocationAreas(forward bool) ([]Area, error) {
 	endpoint := "https://pokeapi.co/api/v2/location-area/"
-	if cfg.Next != "" {
+
+	// Err when running outbounds
+	if forward && cfg.Next == "" && cfg.Previous != "" {
+		return nil, ErrNoNext
+	}
+	if !forward && cfg.Previous == "" {
+		return nil, ErrNoPrev
+	}
+
+	// Update endpoint URL when possible
+	if forward && cfg.Next != "" {
 		endpoint = cfg.Next
+	}
+	if !forward && cfg.Previous != "" {
+		endpoint = cfg.Previous
 	}
 
 	res, err := http.Get(endpoint)
