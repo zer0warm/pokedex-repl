@@ -20,7 +20,12 @@ func main() {
 		// Do nothing when issuing line breaks
 		if len(scanner.Text()) > 0 {
 			inputWords := cleanInput(scanner.Text())
-			fmt.Println("Your command was:", inputWords[0])
+			command := inputWords[0]
+			if cmd, ok := listCommands()[command]; ok {
+				if err := cmd.callback(); err != nil {
+					fmt.Errorf("while running callback: %w\n", err)
+				}
+			}
 		}
 	}
 	if err := scanner.Err(); err != nil {
