@@ -107,8 +107,11 @@ func commandExplore(cfg *api.Config) error {
 			cfg.Args[0], err)
 	}
 
+	if len(pokemons) > 0 {
+		fmt.Println("Found pokemons:")
+	}
 	for _, pokemon := range pokemons {
-		fmt.Println(pokemon)
+		fmt.Println("-", pokemon)
 	}
 
 	return nil
