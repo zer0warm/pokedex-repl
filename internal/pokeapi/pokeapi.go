@@ -28,7 +28,7 @@ var (
 
 // Get location areas with direction (forward or not)
 func (cfg *Config) GetLocationAreas(forward bool) ([]Area, error) {
-	endpoint := "https://pokeapi.co/api/v2/location-area/"
+	endpoint := "https://pokeapi.co/api/v2/location-area/?offset=0&limit=20"
 
 	// Err when running outbounds
 	if forward && cfg.Next == "" && cfg.Previous != "" {
