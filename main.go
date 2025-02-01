@@ -31,7 +31,7 @@ func main() {
 			apiConfig.Args = inputWords[1:]
 			if cmd, ok := listCommands()[command]; ok {
 				if err := cmd.callback(&apiConfig); err != nil {
-					fmt.Errorf("while running callback: %w\n", err)
+					fmt.Fprintln(os.Stderr, "while running callback:", err)
 				}
 			} else {
 				fmt.Println("Unknown command")
