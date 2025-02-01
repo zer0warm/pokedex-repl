@@ -6,13 +6,17 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	api "github.com/zer0warm/pokedex-repl/internal/pokeapi"
+	cache "github.com/zer0warm/pokedex-repl/internal/pokecache"
 )
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
-	apiConfig := api.Config{}
+	apiConfig := api.Config{
+		Cache: cache.NewCache(60 * time.Second),
+	}
 	for {
 		fmt.Print("Pokedex> ")
 

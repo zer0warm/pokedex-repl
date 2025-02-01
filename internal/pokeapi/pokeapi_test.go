@@ -1,10 +1,15 @@
 package pokeapi
 
-import "testing"
+import (
+	"testing"
+	"time"
+
+	cache "github.com/zer0warm/pokedex-repl/internal/pokecache"
+)
 
 func TestGetLocationAreas(t *testing.T) {
-	cfg := &Config{}
-	areas, err := cfg.GetLocationAreas()
+	cfg := &Config{Cache: cache.NewCache(5 * time.Second)}
+	areas, err := cfg.GetLocationAreas(true)
 	if err != nil {
 		t.Errorf("%v", err)
 	}

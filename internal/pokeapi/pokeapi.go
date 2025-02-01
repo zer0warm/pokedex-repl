@@ -4,7 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"log"
 	"net/http"
+
+	cache "github.com/zer0warm/pokedex-repl/internal/pokecache"
 )
 
 type Area struct {
@@ -14,6 +18,7 @@ type Area struct {
 type Config struct {
 	Next     string
 	Previous string
+	Cache    *cache.Cache
 }
 
 var (
@@ -41,11 +46,26 @@ func (cfg *Config) GetLocationAreas(forward bool) ([]Area, error) {
 		endpoint = cfg.Previous
 	}
 
-	res, err := http.Get(endpoint)
-	if err != nil {
-		return nil, fmt.Errorf("while GET location-area: %w", err)
+	var body []byte
+	if value, ok := cfg.Cache.Get(endpoint); ok {
+		log.Printf("Cache: HIT - %s\n", endpoint)
+		body = value
+	} else {
+		log.Printf("Cache: MISS - %s\n", endpoint)
+
+		res, err := http.Get(endpoint)
+		if err != nil {
+			return nil, fmt.Errorf("while GET location-area: %w", err)
+		}
+		defer res.Body.Close()
+
+		body, err = io.ReadAll(res.Body)
+		if err != nil {
+			return nil, fmt.Errorf("while consuming response: %w", err)
+		}
+
+		cfg.Cache.Add(endpoint, body)
 	}
-	defer res.Body.Close()
 
 	data := struct {
 		Next     string `json:"next,omitempty"`
@@ -55,7 +75,7 @@ func (cfg *Config) GetLocationAreas(forward bool) ([]Area, error) {
 		} `json:"results"`
 	}{}
 
-	if err := json.NewDecoder(res.Body).Decode(&data); err != nil {
+	if err := json.Unmarshal(body, &data); err != nil {
 		return nil, fmt.Errorf("while decoding response location-area: %w", err)
 	}
 
