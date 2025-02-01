@@ -32,6 +32,8 @@ func main() {
 				if err := cmd.callback(&apiConfig); err != nil {
 					fmt.Errorf("while running callback: %w\n", err)
 				}
+			} else {
+				fmt.Println("Unknown command")
 			}
 		}
 	}
