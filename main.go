@@ -28,6 +28,7 @@ func main() {
 		if len(scanner.Text()) > 0 {
 			inputWords := cleanInput(scanner.Text())
 			command := inputWords[0]
+			apiConfig.Args = inputWords[1:]
 			if cmd, ok := listCommands()[command]; ok {
 				if err := cmd.callback(&apiConfig); err != nil {
 					fmt.Errorf("while running callback: %w\n", err)

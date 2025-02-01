@@ -37,6 +37,11 @@ func listCommands() map[string]cliCommand {
 			desc:     "List previous 20 location areas",
 			callback: commandMapb,
 		},
+		"explore": {
+			name:     "explore",
+			desc:     "List pokemons can be encountered in an area",
+			callback: commandExplore,
+		},
 	}
 }
 
@@ -85,6 +90,25 @@ func commandMapb(cfg *api.Config) error {
 
 	for _, area := range areas {
 		fmt.Println(area.Name)
+	}
+
+	return nil
+}
+
+func commandExplore(cfg *api.Config) error {
+	if len(cfg.Args) != 1 {
+		return fmt.Errorf("must supply 1 location")
+	}
+
+	pokemons, err := cfg.GetAreaPokemons()
+	if err != nil {
+		return fmt.Errorf(
+			"while getting list of pokemons encountered in %s: %w",
+			cfg.Args[0], err)
+	}
+
+	for _, pokemon := range pokemons {
+		fmt.Println(pokemon)
 	}
 
 	return nil

@@ -18,6 +18,7 @@ type Area struct {
 type Config struct {
 	Next     string
 	Previous string
+	Args     []string
 	Cache    *cache.Cache
 }
 
@@ -88,4 +89,53 @@ func (cfg *Config) GetLocationAreas(forward bool) ([]Area, error) {
 	}
 
 	return areas, nil
+}
+
+// Get pokemons can be encountered in an area with their name
+// Name is supplied in config.Args
+func (cfg *Config) GetAreaPokemons() ([]string, error) {
+	endpoint := fmt.Sprintf(
+		"https://pokeapi.co/api/v2/location-area/%s?offset=0&limit=20",
+		cfg.Args[0],
+	)
+
+	var body []byte
+	if value, ok := cfg.Cache.Get(endpoint); ok {
+		log.Printf("Cache: HIT - %s\n", endpoint)
+		body = value
+	} else {
+		log.Printf("Cache: MISS - %s\n", endpoint)
+
+		res, err := http.Get(endpoint)
+		if err != nil {
+			return nil, fmt.Errorf("while GET location-area: %w", err)
+		}
+		defer res.Body.Close()
+
+		body, err = io.ReadAll(res.Body)
+		if err != nil {
+			return nil, fmt.Errorf("while consuming response: %w", err)
+		}
+
+		cfg.Cache.Add(endpoint, body)
+	}
+
+	data := struct {
+		PokemonEncounters []struct {
+			Pokemon struct {
+				Name string `json:"name"`
+			} `json:"pokemon"`
+		} `json:"pokemon_encounters"`
+	}{}
+
+	if err := json.Unmarshal(body, &data); err != nil {
+		return nil, fmt.Errorf("while decoding JSON data: %w", err)
+	}
+
+	pokemons := []string{}
+	for _, pokemon := range data.PokemonEncounters {
+		pokemons = append(pokemons, pokemon.Pokemon.Name)
+	}
+
+	return pokemons, nil
 }
