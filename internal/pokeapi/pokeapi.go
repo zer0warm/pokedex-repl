@@ -47,25 +47,9 @@ func (cfg *Config) GetLocationAreas(forward bool) ([]Area, error) {
 		endpoint = cfg.Previous
 	}
 
-	var body []byte
-	if value, ok := cfg.Cache.Get(endpoint); ok {
-		log.Printf("Cache: HIT - %s\n", endpoint)
-		body = value
-	} else {
-		log.Printf("Cache: MISS - %s\n", endpoint)
-
-		res, err := http.Get(endpoint)
-		if err != nil {
-			return nil, fmt.Errorf("while GET location-area: %w", err)
-		}
-		defer res.Body.Close()
-
-		body, err = io.ReadAll(res.Body)
-		if err != nil {
-			return nil, fmt.Errorf("while consuming response: %w", err)
-		}
-
-		cfg.Cache.Add(endpoint, body)
+	body, err := cfg.cacheGet(endpoint)
+	if err != nil {
+		return nil, err
 	}
 
 	data := struct {
@@ -99,25 +83,9 @@ func (cfg *Config) GetAreaPokemons() ([]string, error) {
 		cfg.Args[0],
 	)
 
-	var body []byte
-	if value, ok := cfg.Cache.Get(endpoint); ok {
-		log.Printf("Cache: HIT - %s\n", endpoint)
-		body = value
-	} else {
-		log.Printf("Cache: MISS - %s\n", endpoint)
-
-		res, err := http.Get(endpoint)
-		if err != nil {
-			return nil, fmt.Errorf("while GET location-area: %w", err)
-		}
-		defer res.Body.Close()
-
-		body, err = io.ReadAll(res.Body)
-		if err != nil {
-			return nil, fmt.Errorf("while consuming response: %w", err)
-		}
-
-		cfg.Cache.Add(endpoint, body)
+	body, err := cfg.cacheGet(endpoint)
+	if err != nil {
+		return nil, err
 	}
 
 	data := struct {
@@ -138,4 +106,31 @@ func (cfg *Config) GetAreaPokemons() ([]string, error) {
 	}
 
 	return pokemons, nil
+}
+
+// Use cache, otherwise add to cache
+func (cfg *Config) cacheGet(endpoint string) ([]byte, error) {
+	var body []byte
+
+	if value, ok := cfg.Cache.Get(endpoint); ok {
+		log.Printf("Cache: HIT - %s\n", endpoint)
+		body = value
+	} else {
+		log.Printf("Cache: MISS - %s\n", endpoint)
+
+		res, err := http.Get(endpoint)
+		if err != nil {
+			return nil, fmt.Errorf("while GET location-area: %w", err)
+		}
+		defer res.Body.Close()
+
+		body, err = io.ReadAll(res.Body)
+		if err != nil {
+			return nil, fmt.Errorf("while consuming response: %w", err)
+		}
+
+		cfg.Cache.Add(endpoint, body)
+	}
+
+	return body, nil
 }
