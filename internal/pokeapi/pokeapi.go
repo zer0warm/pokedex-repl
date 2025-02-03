@@ -15,6 +15,11 @@ type Area struct {
 	Name string `json:"name"`
 }
 
+type PokemonInfo struct {
+	Name    string `json:"name"`
+	BaseEXP int    `json:"base_experience"`
+}
+
 type Config struct {
 	Next     string
 	Previous string
@@ -106,6 +111,27 @@ func (cfg *Config) GetAreaPokemons() ([]string, error) {
 	}
 
 	return pokemons, nil
+}
+
+// Get pokemon information
+// For now, only their name (echo from request) and their base EXP
+func (cfg *Config) GetPokemonInfo() (PokemonInfo, error) {
+	endpoint := fmt.Sprintf(
+		"https://pokeapi.co/api/v2/pokemon/%s",
+		cfg.Args[0],
+	)
+
+	body, err := cfg.cacheGet(endpoint)
+	if err != nil {
+		return PokemonInfo{}, fmt.Errorf("while GET: %w", err)
+	}
+
+	info := PokemonInfo{}
+	if err := json.Unmarshal(body, &info); err != nil {
+		return PokemonInfo{}, fmt.Errorf("while decoding JSON: %w", err)
+	}
+
+	return info, nil
 }
 
 // Use cache, otherwise add to cache
