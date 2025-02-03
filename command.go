@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"math/rand"
 	"os"
 
 	api "github.com/zer0warm/pokedex-repl/internal/pokeapi"
@@ -13,6 +14,10 @@ type cliCommand struct {
 	name     string
 	desc     string
 	callback func(cfg *api.Config) error
+}
+
+type pokedex struct {
+	pokemons map[string]api.PokemonInfo
 }
 
 func listCommands() map[string]cliCommand {
@@ -41,6 +46,11 @@ func listCommands() map[string]cliCommand {
 			name:     "explore",
 			desc:     "List pokemons can be encountered in an area",
 			callback: commandExplore,
+		},
+		"catch": {
+			name:     "catch",
+			desc:     "Try to catch a pokemon",
+			callback: commandCatch,
 		},
 	}
 }
@@ -112,6 +122,39 @@ func commandExplore(cfg *api.Config) error {
 	}
 	for _, pokemon := range pokemons {
 		fmt.Println("-", pokemon)
+	}
+
+	return nil
+}
+
+func commandCatch(cfg *api.Config) error {
+	if len(cfg.Args) != 1 {
+		return fmt.Errorf("must supply 1 pokemon name")
+	}
+
+	info, err := cfg.GetPokemonInfo()
+	if err != nil {
+		return fmt.Errorf(
+			"while getting pokemon %s info: %w",
+			cfg.Args[0], err,
+		)
+	}
+
+	fmt.Printf("Throwing a Pokeball at %s...\n", info.Name)
+
+	// Naive algorithms to make higher base EXP pokemons harder to catch
+	caught := false
+	for range 100 {
+		if rand.Intn(info.BaseEXP) == 0 {
+			caught = true
+			break
+		}
+	}
+	if caught {
+		fmt.Printf("%s was caught!\n", info.Name)
+		cfg.Pokedex[info.Name] = info
+	} else {
+		fmt.Printf("%s escaped!\n", info.Name)
 	}
 
 	return nil

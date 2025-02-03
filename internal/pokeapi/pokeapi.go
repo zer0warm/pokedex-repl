@@ -25,6 +25,7 @@ type Config struct {
 	Previous string
 	Args     []string
 	Cache    *cache.Cache
+	Pokedex  map[string]PokemonInfo
 }
 
 var (

@@ -15,7 +15,8 @@ import (
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	apiConfig := api.Config{
-		Cache: cache.NewCache(60 * time.Second),
+		Cache:   cache.NewCache(60 * time.Second),
+		Pokedex: make(map[string]api.PokemonInfo),
 	}
 	for {
 		fmt.Print("Pokedex> ")
