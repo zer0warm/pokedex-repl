@@ -18,6 +18,35 @@ type Area struct {
 type PokemonInfo struct {
 	Name    string `json:"name"`
 	BaseEXP int    `json:"base_experience"`
+	Height  int    `json:"height"`
+	Weight  int    `json:"weight"`
+	Stats   []struct {
+		Base int `json:"base_stat"`
+		Stat struct {
+			Name string `json:"name"`
+		} `json:"stat"`
+	} `json:"stats"`
+	Types []struct {
+		Type struct {
+			Name string `json:"name"`
+		} `json:"type"`
+	} `json:"types"`
+}
+
+func (info PokemonInfo) String() string {
+	result := ""
+	result += fmt.Sprintln("Name:", info.Name)
+	result += fmt.Sprintln("Height:", info.Height)
+	result += fmt.Sprintln("Weight:", info.Weight)
+	result += fmt.Sprintln("Stats:")
+	for _, stat := range info.Stats {
+		result += fmt.Sprintf("- %s: %d\n", stat.Stat.Name, stat.Base)
+	}
+	result += fmt.Sprintln("Types:")
+	for _, typ := range info.Types {
+		result += fmt.Sprintf("- %s\n", typ.Type.Name)
+	}
+	return result[:len(result)-1]
 }
 
 type Config struct {

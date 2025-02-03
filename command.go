@@ -52,6 +52,11 @@ func listCommands() map[string]cliCommand {
 			desc:     "Try to catch a pokemon",
 			callback: commandCatch,
 		},
+		"inspect": {
+			name:     "inspect",
+			desc:     "Inspect pokemon details",
+			callback: commandInspect,
+		},
 	}
 }
 
@@ -155,6 +160,20 @@ func commandCatch(cfg *api.Config) error {
 		cfg.Pokedex[info.Name] = info
 	} else {
 		fmt.Printf("%s escaped!\n", info.Name)
+	}
+
+	return nil
+}
+
+func commandInspect(cfg *api.Config) error {
+	if len(cfg.Args) != 1 {
+		return fmt.Errorf("must supply 1 pokemon name")
+	}
+
+	if info, ok := cfg.Pokedex[cfg.Args[0]]; ok {
+		fmt.Println(info)
+	} else {
+		fmt.Println("You have not caught this pokemon.")
 	}
 
 	return nil
